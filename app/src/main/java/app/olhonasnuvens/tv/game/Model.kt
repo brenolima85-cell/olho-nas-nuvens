@@ -65,6 +65,7 @@ data class SimulationState(
     val bestEasy: Int,
     val bestNormal: Int,
     val gates: List<CloudGate>,
+    val gameOverElapsed: Float = 0f,
 )
 
 data class RenderFrame(

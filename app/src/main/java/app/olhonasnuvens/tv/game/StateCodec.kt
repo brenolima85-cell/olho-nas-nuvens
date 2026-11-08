@@ -32,6 +32,7 @@ object StateCodec {
                 gate.passed.toString(),
             ).joinToString(",")
         }
+        lines += bits(state.gameOverElapsed)
         return lines.joinToString("\n")
     }
 
@@ -55,7 +56,9 @@ object StateCodec {
         val bestNormal = lines[13].toIntOrNull() ?: return null
         if (bestEasy < 0 || bestNormal < 0) return null
         val count = lines[14].toIntOrNull() ?: return null
-        if (count < 0 || count > MAX_GATES || lines.size != HEADER_LINES + count) return null
+        if (count < 0 || count > MAX_GATES) return null
+        val gatesEnd = HEADER_LINES + count
+        if (lines.size != gatesEnd && lines.size != gatesEnd + 1) return null
         val gates = ArrayList<CloudGate>(count)
         for (index in 0 until count) {
             val parts = lines[HEADER_LINES + index].split(',')
@@ -69,8 +72,14 @@ object StateCodec {
             if (gap <= 0f || width <= 0f) return null
             gates += CloudGate(x, center, gap, width, passed)
         }
+        val gameOverElapsed = if (lines.size == gatesEnd) {
+            0f
+        } else {
+            bitsOrNull(lines[gatesEnd]) ?: return null
+        }
         if (!eyeY.isFinite() || !eyeVy.isFinite() || !wingEnergy.isFinite() ||
-            !aliveTime.isFinite() || !nextSpawnX.isFinite()
+            !aliveTime.isFinite() || !nextSpawnX.isFinite() ||
+            !gameOverElapsed.isFinite() || gameOverElapsed < 0f
         ) {
             return null
         }
@@ -89,6 +98,7 @@ object StateCodec {
             bestEasy = bestEasy,
             bestNormal = bestNormal,
             gates = gates,
+            gameOverElapsed = gameOverElapsed,
         )
     }
 

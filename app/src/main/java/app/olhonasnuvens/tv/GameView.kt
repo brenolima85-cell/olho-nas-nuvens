@@ -15,13 +15,15 @@ import app.olhonasnuvens.tv.input.InputOutcome
 import app.olhonasnuvens.tv.input.SessionInput
 import app.olhonasnuvens.tv.input.TvKeyCodes
 import app.olhonasnuvens.tv.input.classifyKey
+import app.olhonasnuvens.tv.input.holdsGameOverConfirm
 import app.olhonasnuvens.tv.input.isHorizontalKey
 import app.olhonasnuvens.tv.render.Palette
 import app.olhonasnuvens.tv.render.SceneRenderer
 
 /**
  * Relógio do jogo. A física só avança em [SessionPhase.PLAYING].
- * Ao ir para segundo plano o relógio zera, para o tempo fora da tela não virar um salto.
+ * No fim de jogo, o mesmo passo fixo libera o OK depois de uma espera curta.
+ * Ao ir para segundo plano o relógio de frames zera, para o tempo fora da tela não contar.
  */
 class GameView(
     context: Context,
@@ -74,6 +76,7 @@ class GameView(
             return classifyKey(event.keyCode) != null || isHorizontalKey(event.keyCode)
         }
         if (event.action != KeyEvent.ACTION_DOWN) return false
+        if (holdsGameOverConfirm(session, event.keyCode)) return true
         return applyOutcome(decoder.decode(event.keyCode, event.repeatCount, whenMs, playing))
     }
 
@@ -123,12 +126,14 @@ class GameView(
         val steps = stepper.advanceNanos(frameNs)
         val dt = session.tuning.fixedDt
         repeat(steps) {
-            when {
-                session.phase == SessionPhase.PLAYING -> session.fixedUpdate()
-                session.phase == SessionPhase.TITLE && !session.helpOpen -> {
+            when (session.phase) {
+                SessionPhase.PLAYING -> session.fixedUpdate()
+                SessionPhase.TITLE -> if (!session.helpOpen) {
                     cosmeticTime += dt
                     if (cosmeticTime > COSMETIC_WRAP) cosmeticTime -= COSMETIC_WRAP
                 }
+                SessionPhase.GAME_OVER -> session.advanceGameOverClock(dt)
+                SessionPhase.PAUSED -> Unit
             }
         }
         invalidate()

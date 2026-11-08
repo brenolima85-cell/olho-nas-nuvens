@@ -33,6 +33,16 @@ class GameSession(
     private var menuIndex: Int = 0
     private val gates = mutableListOf<CloudGate>()
     private var nextSpawnX: Float = tuning.worldWidth + tuning.initialLead
+    private var gameOverElapsed: Float = 0f
+
+    /**
+     * OK/A do fim de jogo fica parado até a tela ter ficado visível por
+     * [GAME_OVER_CONFIRM_LOCK_SECONDS]. O tempo é só de simulação, somado
+     * em passos fixos enquanto o fim de jogo está em primeiro plano.
+     */
+    val isGameOverConfirmBlocked: Boolean
+        get() = phase == SessionPhase.GAME_OVER &&
+            gameOverElapsed < GAME_OVER_CONFIRM_LOCK_SECONDS
 
     fun gates(): List<CloudGate> = gates.toList()
 
@@ -52,6 +62,7 @@ class GameSession(
     }
 
     fun onConfirm() {
+        if (isGameOverConfirmBlocked) return
         if (phase == SessionPhase.PLAYING && !helpOpen) {
             flap()
             return
@@ -122,6 +133,17 @@ class GameSession(
         }
     }
 
+    /**
+     * Avança a espera do fim de jogo. Um passo maior que o teto de um quadro
+     * não abre a trava inteira: o relógio de frames já limita o tranco.
+     */
+    fun advanceGameOverClock(seconds: Float) {
+        if (phase != SessionPhase.GAME_OVER || !seconds.isFinite() || seconds <= 0f) return
+        if (gameOverElapsed >= GAME_OVER_CONFIRM_LOCK_SECONDS) return
+        val capped = seconds.coerceAtMost(tuning.maxFrameSeconds)
+        gameOverElapsed = (gameOverElapsed + capped).coerceAtMost(GAME_OVER_CONFIRM_LOCK_SECONDS)
+    }
+
     fun fixedUpdate() {
         if (phase != SessionPhase.PLAYING) return
         val dt = tuning.fixedDt
@@ -162,6 +184,7 @@ class GameSession(
             bestEasy = best.get(Difficulty.EASY),
             bestNormal = best.get(Difficulty.NORMAL),
             gates = gates.toList(),
+            gameOverElapsed = gameOverElapsed,
         )
     }
 
@@ -180,6 +203,11 @@ class GameSession(
         gates.clear()
         gates.addAll(state.gates)
         best.replace(state.bestEasy, state.bestNormal)
+        gameOverElapsed = if (state.gameOverElapsed.isFinite()) {
+            state.gameOverElapsed.coerceIn(0f, GAME_OVER_CONFIRM_LOCK_SECONDS)
+        } else {
+            0f
+        }
     }
 
     fun toFrame(): RenderFrame {
@@ -268,6 +296,7 @@ class GameSession(
         wingEnergy = 0.35f
         aliveTime = 0f
         menuIndex = 0
+        gameOverElapsed = 0f
         resetGates()
     }
 
@@ -281,6 +310,7 @@ class GameSession(
         wingEnergy = 0.25f
         aliveTime = 0f
         menuIndex = 0
+        gameOverElapsed = 0f
         gates.clear()
         nextSpawnX = tuning.worldWidth + tuning.initialLead
     }
@@ -293,6 +323,7 @@ class GameSession(
         newRecord = score > previous && score > 0
         best.submit(difficulty, score)
         eyeVy = 0f
+        gameOverElapsed = 0f
     }
 
     private fun resetGates() {
@@ -380,7 +411,8 @@ class GameSession(
         else -> Copy.HOW_TO_HINT
     }
 
-    private companion object {
-        const val MAX_GATES = 8
+    companion object {
+        const val GAME_OVER_CONFIRM_LOCK_SECONDS = 0.7f
+        private const val MAX_GATES = 8
     }
 }

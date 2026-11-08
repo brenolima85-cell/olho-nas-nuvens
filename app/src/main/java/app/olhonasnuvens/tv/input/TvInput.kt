@@ -65,6 +65,14 @@ fun isHorizontalKey(keyCode: Int): Boolean {
     return keyCode == TvKeyCodes.DPAD_LEFT || keyCode == TvKeyCodes.DPAD_RIGHT
 }
 
+/**
+ * Confirmar no fim de jogo, enquanto a trava curta está ativa, é engolido
+ * sem passar pelo debounce. Assim um aperto repetido não atrasa o OK seguinte.
+ */
+fun holdsGameOverConfirm(session: GameSession, keyCode: Int): Boolean {
+    return session.isGameOverConfirmBlocked && classifyKey(keyCode) == PadAction.CONFIRM
+}
+
 class InputDecoder(
     private val flapGate: RepeatGate = RepeatGate(FLAP_INTERVAL_MS),
     private val navGate: RepeatGate = RepeatGate(NAV_INTERVAL_MS),

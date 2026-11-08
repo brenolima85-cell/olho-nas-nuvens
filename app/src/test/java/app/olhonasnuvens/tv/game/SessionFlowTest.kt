@@ -1,6 +1,7 @@
 package app.olhonasnuvens.tv.game
 
 import app.olhonasnuvens.tv.killWithScore
+import app.olhonasnuvens.tv.openGameOverRetry
 import app.olhonasnuvens.tv.startNew
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -68,6 +69,7 @@ class SessionFlowTest {
         assertEquals(MenuAction.RETRY, session.menu().items[0].action)
         assertTrue(session.accessibilitySummary().contains(Copy.GAME_OVER))
         session.onDown()
+        openGameOverRetry(session)
         session.onConfirm()
         assertEquals(SessionPhase.TITLE, session.phase)
         assertTrue(session.accessibilitySummary().contains(Copy.DISCLAIMER))

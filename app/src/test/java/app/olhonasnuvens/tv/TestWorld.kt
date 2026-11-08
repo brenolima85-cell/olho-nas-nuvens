@@ -32,3 +32,13 @@ internal fun killWithScore(session: GameSession, score: Int) {
     session.fixedUpdate()
     assertEquals(SessionPhase.GAME_OVER, session.phase)
 }
+
+internal fun openGameOverRetry(session: GameSession) {
+    var guard = 0
+    while (session.isGameOverConfirmBlocked && guard < 200) {
+        session.advanceGameOverClock(session.tuning.fixedDt)
+        guard++
+    }
+    check(!session.isGameOverConfirmBlocked)
+    check(guard > 1)
+}

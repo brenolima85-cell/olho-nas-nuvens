@@ -1,6 +1,7 @@
 package app.olhonasnuvens.tv.game
 
 import app.olhonasnuvens.tv.killWithScore
+import app.olhonasnuvens.tv.openGameOverRetry
 import app.olhonasnuvens.tv.startNew
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -71,6 +72,7 @@ class ScoringTest {
         killWithScore(easy, 4)
         assertTrue(easy.newRecord)
         assertEquals(4, easy.best.get(Difficulty.EASY))
+        openGameOverRetry(easy)
         easy.onConfirm()
         assertEquals(SessionPhase.PLAYING, easy.phase)
         assertEquals(0, easy.score)
@@ -99,6 +101,7 @@ class ScoringTest {
         val session = startNew(Difficulty.NORMAL)
         killWithScore(session, 6)
         assertEquals(6, session.best.get(Difficulty.NORMAL))
+        openGameOverRetry(session)
         session.onConfirm()
         assertEquals(SessionPhase.PLAYING, session.phase)
         assertEquals(0, session.score)

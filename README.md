@@ -87,7 +87,7 @@ O piscar do olho dura cerca de 0,18 s a cada 3,6 s. É a pálpebra do mascote, n
 - **Como jogar:** texto sobre o início. Voltar ou o botão Voltar retorna ao início.
 - **Jogando:** OK / centro / Enter / A sobe o olho. Cima e baixo do D-pad não sobem.
 - **Pausado:** Continuar, tentar de novo ou voltar ao início. Acontece também sozinho se o app sai de primeiro plano. A partida não continua escondida.
-- **Fim de jogo:** o foco já está em **Tentar de novo**. Um OK recomeça na hora, no mesmo modo, sem passar pelo início. A outra opção volta ao início.
+- **Fim de jogo:** o foco já está em **Tentar de novo**. O OK da partida que acabou não recomeça na hora: a tela fica por 0,7 s de tempo de simulação, só enquanto está visível. Depois, um OK recomeça no mesmo modo. A outra opção volta ao início. Voltar sai sem essa espera.
 - Voltar durante o jogo pausa. No pause, Voltar continua. Sair da partida é um item do menu.
 
 O debounce descarta repetição de tecla segurada e um segundo evento em menos de 110 ms no voo (alguns controles mandam centro e Enter juntos). O menu usa outra janela, de 180 ms, para o OK do fim de jogo não ser engolido pelo último pulo.
