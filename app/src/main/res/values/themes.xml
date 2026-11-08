@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.OlhoNasNuvens" parent="@android:style/Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/sky_bottom</item>
+        <item name="android:colorBackground">@color/sky_bottom</item>
+        <item name="android:keepScreenOn">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+</resources>
