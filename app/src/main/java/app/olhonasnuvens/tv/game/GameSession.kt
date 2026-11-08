@@ -223,7 +223,7 @@ class GameSession(
             phase == SessionPhase.PLAYING ->
                 "${Copy.POINTS} $score. ${Copy.BEST} ${best.get(difficulty)}."
             phase == SessionPhase.PAUSED -> "${Copy.PAUSED}. ${selected.orEmpty()}"
-            phase == SessionPhase.GAME_OVER ->
+            else ->
                 "${Copy.GAME_OVER}. ${Copy.POINTS} $score. ${selected.orEmpty()}"
         }
     }

@@ -20,7 +20,7 @@ class MainActivity : Activity() {
         applyImmersive()
         session = GameSession(
             gaps = RandomGapSource(Random(System.currentTimeMillis())),
-            board = LocalBestScores.load(this),
+            best = LocalBestScores.load(this),
         )
         savedInstanceState?.getString(STATE_KEY)?.let { raw ->
             StateCodec.decode(raw)?.let { session.restore(it) }
