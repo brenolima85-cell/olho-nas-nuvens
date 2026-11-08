@@ -85,12 +85,12 @@ O piscar do olho dura cerca de 0,18 s a cada 3,6 s. É a pálpebra do mascote, n
 
 - **Início:** modo fácil, modo normal e como jogar. Voltar fecha o app.
 - **Como jogar:** texto sobre o início. Voltar ou o botão Voltar retorna ao início.
-- **Jogando:** OK / centro / Enter / A sobe o olho. Cima e baixo do D-pad não sobem.
-- **Pausado:** Continuar, tentar de novo ou voltar ao início. Acontece também sozinho se o app sai de primeiro plano. A partida não continua escondida.
+- **Jogando:** OK / centro / Enter / A sobe o olho. Cima e baixo do D-pad, e o eixo vertical do analógico ou do hat, não sobem o olho: no menu, esse eixo dá um passo só, até voltar ao centro.
+- **Pausado:** Continuar, tentar de novo ou voltar ao início. Acontece também sozinho se o app sai de primeiro plano, ou se o remoto / gamepad que estava em uso some. Religar o controle não continua a partida. Teclado e mouse sozinhos não pausam.
 - **Fim de jogo:** o foco já está em **Tentar de novo**. O OK da partida que acabou não recomeça na hora: a tela fica por 0,7 s de tempo de simulação, só enquanto está visível. Depois, um OK recomeça no mesmo modo. A outra opção volta ao início. Voltar sai sem essa espera.
 - Voltar durante o jogo pausa. No pause, Voltar continua. Sair da partida é um item do menu.
 
-O debounce descarta repetição de tecla segurada e um segundo evento em menos de 110 ms no voo (alguns controles mandam centro e Enter juntos). O menu usa outra janela, de 180 ms, para o OK do fim de jogo não ser engolido pelo último pulo.
+O debounce descarta repetição de tecla segurada e um segundo evento em menos de 110 ms no voo (alguns controles mandam centro e Enter juntos). O menu usa outra janela, de 180 ms, para o OK do fim de jogo não ser engolido pelo último pulo. Voltar usa o caminho antigo do Android (`onBackPressed` e a tecla), sem AndroidX: o manifesto deixa `enableOnBackInvokedCallback` desligado para o remoto de Fire OS continuar entregando a tecla. Os dois caminhos compartilham o mesmo debounce. O texto lido por acessibilidade só é republicado quando o resumo inteiro muda, não só a fase ou os pontos.
 
 Toque não faz parte do jogo.
 

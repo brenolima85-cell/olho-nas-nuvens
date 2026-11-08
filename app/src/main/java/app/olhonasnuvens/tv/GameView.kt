@@ -10,9 +10,12 @@ import android.view.View
 import app.olhonasnuvens.tv.game.FixedStepper
 import app.olhonasnuvens.tv.game.GameSession
 import app.olhonasnuvens.tv.game.SessionPhase
+import app.olhonasnuvens.tv.game.SummaryAnnouncer
 import app.olhonasnuvens.tv.input.InputDecoder
 import app.olhonasnuvens.tv.input.InputOutcome
 import app.olhonasnuvens.tv.input.SessionInput
+import app.olhonasnuvens.tv.input.StickDirection
+import app.olhonasnuvens.tv.input.StickNavigator
 import app.olhonasnuvens.tv.input.TvKeyCodes
 import app.olhonasnuvens.tv.input.classifyKey
 import app.olhonasnuvens.tv.input.holdsGameOverConfirm
@@ -33,7 +36,9 @@ class GameView(
     var onExitRequested: (() -> Unit)? = null
 
     private val renderer = SceneRenderer()
+    private val announcer = SummaryAnnouncer()
     private val decoder = InputDecoder()
+    private val stick = StickNavigator()
     private val stepper = FixedStepper(
         fixedDt = session.tuning.fixedDt,
         maxFrameSeconds = session.tuning.maxFrameSeconds,
@@ -65,8 +70,32 @@ class GameView(
         loopPosted = false
         choreographer.removeFrameCallback(frameCallback)
         stepper.reset()
+        releaseDirectionalHold()
         session.background()
         invalidate()
+    }
+
+    /**
+     * Passo de menu vindo do analógico ou do hat. Não sobe o olho.
+     * Segurar o eixo não entra aqui de novo: o [StickNavigator] só entrega a borda.
+     */
+    fun handleDirectionalAction(isUp: Boolean, eventTimeMillis: Long) {
+        val keyCode = if (isUp) TvKeyCodes.DPAD_UP else TvKeyCodes.DPAD_DOWN
+        val playing = session.phase == SessionPhase.PLAYING && !session.helpOpen
+        val whenMs = if (eventTimeMillis > 0L) eventTimeMillis else SystemClock.uptimeMillis()
+        applyOutcome(decoder.decode(keyCode, 0, whenMs, playing))
+    }
+
+    fun sampleStick(y: Float, hatY: Float, eventTimeMillis: Long) {
+        when (stick.onSample(y, hatY)) {
+            StickDirection.UP -> handleDirectionalAction(isUp = true, eventTimeMillis)
+            StickDirection.DOWN -> handleDirectionalAction(isUp = false, eventTimeMillis)
+            null -> Unit
+        }
+    }
+
+    fun releaseDirectionalHold() {
+        stick.disarm()
     }
 
     fun handleKeyEvent(event: KeyEvent): Boolean {
@@ -91,8 +120,7 @@ class GameView(
     }
 
     override fun onDraw(canvas: android.graphics.Canvas) {
-        val summary = session.accessibilitySummary()
-        if (contentDescription != summary) contentDescription = summary
+        announcer.update(session.accessibilitySummary())?.let { contentDescription = it }
         renderer.draw(canvas, width, height, session.toFrame(), cosmeticTime)
     }
 

@@ -94,6 +94,26 @@ class InputTest {
     }
 
     @Test
+    fun aSecondBackInsideTheNavWindowDoesNotToggleTwice() {
+        val decoder = InputDecoder()
+        val session = startNew()
+        val first = decoder.decode(TvKeyCodes.BACK, 0, 1_000L, playing = true)
+        SessionInput.apply((first as InputOutcome.Action).action, session)
+        assertEquals(SessionPhase.PAUSED, session.phase)
+        val echoed = decoder.decode(TvKeyCodes.BACK, 0, 1_040L, playing = false)
+        assertTrue(echoed is InputOutcome.Consumed)
+        assertEquals(SessionPhase.PAUSED, session.phase)
+        val later = decoder.decode(
+            TvKeyCodes.BACK,
+            0,
+            1_000L + InputDecoder.NAV_INTERVAL_MS,
+            playing = false,
+        )
+        SessionInput.apply((later as InputOutcome.Action).action, session)
+        assertEquals(SessionPhase.PLAYING, session.phase)
+    }
+
+    @Test
     fun repeatGateRejectsRepeatsAndAcceptsAClockStepBack() {
         val gate = RepeatGate(100L)
         assertTrue(gate.accept(1_000L, 0))
